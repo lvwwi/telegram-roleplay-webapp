@@ -9,7 +9,9 @@
     <link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/vant@4/lib/index.css" />
     <script src="https://fastly.jsdelivr.net/npm/vue@3"></script>
     <script src="https://fastly.jsdelivr.net/npm/vant@4/lib/vant.min.js"></script>
+    <!-- 样式部分保持不变 -->
     <style>
+        /* 所有原有样式保持不变 */
         [v-cloak] {
             display: none;
         }
@@ -203,295 +205,155 @@
 </head>
 
 <body>
-    <div id="app" v-cloak>
-        <!-- 标题部分 -->
-        <div class="title-container">
-            <h1>DZMM | 大家都爱玩</h1>
-        </div>
-        <!-- 导航栏 -->
-        <div class="nav-bar">
-            <div class="app-title">DZMM</div>
-            <div class="nav-icons">
-                <van-icon name="search" size="24" @click="showSearch = true" />
-                <van-icon name="bell" size="24" style="margin-left: 16px" @click="showNotifications = true" />
-                <van-icon :name="isDarkMode? 'moon-o' :'sunny-o'" size="24" style="margin-left: 16px"
-                    @click="toggleDarkMode" />
-                <image class="user-avatar" :src="userAvatar" :style="{ width: '30px', height: '30px', borderRadius: '50%' }" />
-            </div>
-        </div>
-
-        <!-- 搜索弹窗 -->
-        <van-popup v-model:show="showSearch" position="top" :style="{ height: '100%' }">
-            <van-search
-                v-model="searchValue"
-                placeholder="搜索内容"
-                show-action
-                @cancel="showSearch = false"
-            />
-            <div class="search-results" v-if="searchValue">
-                <!-- 搜索结果 -->
-            </div>
-        </van-popup>
-
-        <!-- 通知弹窗 -->
-        <van-popup v-model:show="showNotifications" position="right" :style="{ height: '100%', width: '80%' }">
-            <van-nav-bar
-                title="通知"
-                left-arrow
-                @click-left="showNotifications = false"
-            />
-            <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
-                <van-list
-                    v-model:loading="loading"
-                    :finished="finished"
-                    finished-text="没有更多了"
-                    @load="onLoad"
-                >
-                    <van-cell v-for="item in notifications" :key="item.id" :title="item.title" :label="item.content" />
-                </van-list>
-            </van-pull-refresh>
-        </van-popup>
-
-        <!-- 标签导航栏 -->
-        <div class="tag-nav">
-            <ul>
-                <li class="active-tab">最新</li>
-                <li>日榜</li>
-                <li>周榜</li>
-                <li>月榜</li>
-                <li>总榜</li>
-                <li>我的收藏</li>
-                <li>#妈妈</li>
-                <li>#ntr</li>
-                <li>#世界</li>
-                <li>#修仙</li>
-                <li>#系统</li>
-                <li>#姐姐</li>
-                <li>#反差</li>
-                <li>#母狗</li>
-                <li>#催</li>
-                <li>#明日方舟</li>
-                <li>#老师</li>
-                <li>#病娇</li>
-                <li>#女仆</li>
-                <li>#女帝</li>
-                <li>#原神</li>
-            </ul>
-        </div>
-
-        <!-- 主内容区 -->
-        <div class="app-container" :style="{ paddingTop: '46px' }">
-            <van-tabs v-model:active="activeTab" animated swipeable>
-                <!-- 广场 -->
-                <van-tab title="广场">
-                    <div class="tab-content">
-                        <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
-                            <van-list
-                                v-model:loading="loading"
-                                :finished="finished"
-                                finished-text="没有更多了"
-                                @load="onLoad"
-                            >
-                                <div class="card" v-for="item in items" :key="item.id" @click="openDetail(item)">
-                                    <img :src="item.cover" class="card-cover" />
-                                    <div class="card-content">
-                                        <div class="card-title">{{ item.title }}</div>
-                                        <div class="card-desc">{{ item.description }}</div>
-                                        <div class="card-meta">
-                                            <span class="rating">
-                                                <van-rate v-model="item.rating" readonly allow-half size="12" />
-                                                {{ item.rating }}
-                                            </span>
-                                            <span class="heat">
-                                                <van-icon name="fire" />
-                                                {{ item.heat }}
-                                            </span>
-                                            <span class="author">{{ item.author }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </van-list>
-                        </van-pull-refresh>
-                    </div>
-                </van-tab>
-
-                <!-- 会话 -->
-                <van-tab title="会话">
-                    <div class="tab-content">
-                        <van-contact-list
-                            v-model="selectedContact"
-                            :list="contacts"
-                            @add="onAdd"
-                            @edit="onEdit"
-                            @select="onSelect"
-                        />
-                    </div>
-                </van-tab>
-
-                <!-- 我的 -->
-                <van-tab title="我的">
-                    <div class="tab-content">
-                        <van-cell-group inset>
-                            <van-cell title="个人信息" is-link @click="openProfile" />
-                            <van-cell title="我的收藏" is-link @click="openFavorites" />
-                            <van-cell title="历史记录" is-link @click="openHistory" />
-                            <van-cell title="设置" is-link @click="openSettings" />
-                        </van-cell-group>
-                    </div>
-                </van-tab>
-            </van-tabs>
-        </div>
+    <div class="container">
+        <div class="card-grid" id="cardGrid"></div>
     </div>
-    <!-- 底部导航栏 -->
-    <div class="bottom-nav">
-        <a href="#" class="nav-item">
-            <van-icon name="home" />
-            <span>广场</span>
-        </a>
-        <a href="#" class="nav-item">
-            <van-icon name="chatbubble" />
-            <span>会话</span>
-        </a>
-        <a href="#" class="nav-item">
-            <van-icon name="user" />
-            <span>我的</span>
-        </a>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle"></h2>
+            <img id="modalImage" style="max-width: 100%; border-radius: 8px;">
+            <p id="modalDescription"></p>
+            <div id="modalStats"></div>
+            <button class="button" id="startChat">开始对话</button>
+        </div>
     </div>
 
     <script>
-        const { createApp } = Vue;
-        const webapp = window.Telegram.WebApp;
+        let webapp = window.Telegram.WebApp;
         webapp.ready();
+        
+        let selectedCard = null;
 
-        const app = createApp({
-            data() {
-                return {
-                    activeTab: 0,
-                    currentTitle: 'DZMM | 大家都爱玩',
-                    isDarkMode: false,
-                    showSearch: false,
-                    showNotifications: false,
-                    searchValue: '',
-                    refreshing: false,
-                    loading: false,
-                    finished: false,
-                    selectedContact: '',
-                    items: [
-                        {
-                            id: 1,
-                            title: "我多年未见的清纯青梅不...",
-                            description: "在九霄仙域，灵雾缭绕，仙山悬浮，剑气纵横。你是这片仙域中天资卓绝的年轻修士，背负无尽传奇。而你的青梅竹马苏婉清，少时的苏婉清，容貌绝美，宛如仙子。她的身形纤细如柳，一",
-                            cover: "https://picsum.photos/400/300?random=1",
-                            rating: 5.0,
-                            heat: 420,
-                            author: "浮绘筆"
+        // 加载角色数据
+        async function loadCards() {
+            try {
+                const response = await fetch('https://api.github.com/repos/lvwwi/telegram-roleplay-webapp/issues?labels=card&state=open');
+                const issues = await response.json();
+                
+                const cardGrid = document.getElementById('cardGrid');
+                cardGrid.innerHTML = '';
+                
+                issues.forEach(issue => {
+                    try {
+                        const cardData = parseCardFromIssue(issue);
+                        if (cardData) {
+                            const card = createCardElement(cardData);
+                            cardGrid.appendChild(card);
                         }
-                    ],
-                    contacts: [],
-                    notifications: [],
-                    userAvatar: '' // 这里可根据实际获取用户头像的方式设置
-                };
-            },
-            methods: {
-                toggleDarkMode() {
-                    this.isDarkMode = !this.isDarkMode;
-                    document.documentElement.style.setProperty(
-                        '--tg-theme-bg-color',
-                        this.isDarkMode? '#1a1a1a' : '#ffffff'
-                    );
-                    document.documentElement.style.setProperty(
-                        '--tg-theme-text-color',
-                        this.isDarkMode? '#ffffff' : '#000000'
-                    );
-                    document.documentElement.style.setProperty(
-                        '--card-bg-color',
-                        this.isDarkMode? '#2a2a2a' : '#f5f5f5'
-                    );
-                },
-                async onRefresh() {
-                    await this.loadData(true);
-                    this.refreshing = false;
-                },
-                async onLoad() {
-                    await this.loadData();
-                    this.loading = false;
-                },
-                async loadData(refresh = false) {
-                    if (refresh) {
-                        this.items = [];
+                    } catch (e) {
+                        console.error('Error parsing card:', e);
                     }
-                    // 模拟加载数据
-                    const newItems = [
-                        {
-                            id: this.items.length + 1,
-                            title: '示例内容' + (this.items.length + 1),
-                            description: '这是一个示例描述，展示内容的概要信息。',
-                            cover: 'https://picsum.photos/400/300?random=' + (this.items.length + 1),
-                            rating: 4.5,
-                            heat: 1234,
-                            author: '作者名称'
-                        }
-                    ];
-                    this.items.push(...newItems);
-                    if (this.items.length >= 20) {
-                        this.finished = true;
-                    }
-                },
-                openDetail(item) {
-                    // 打开详情页
-                    webapp.sendData(JSON.stringify({
-                        action: 'open_detail',
-                        itemId: item.id
-                    }));
-                },
-                openProfile() {
-                    webapp.sendData(JSON.stringify({
-                        action: 'open_profile'
-                    }));
-                },
-                openFavorites() {
-                    webapp.sendData(JSON.stringify({
-                        action: 'open_favorites'
-                    }));
-                },
-                openHistory() {
-                    webapp.sendData(JSON.stringify({
-                        action: 'open_history'
-                    }));
-                },
-                openSettings() {
-                    webapp.sendData(JSON.stringify({
-                        action: 'open_settings'
-                    }));
-                },
-                onAdd() {
-                    // 添加联系人
-                },
-                onEdit() {
-                    // 编辑联系人
-                },
-                onSelect() {
-                    // 选择联系人
-                }
-            },
-            mounted() {
-                this.loadData();
-                // 设置 Telegram WebApp 主题
-                webapp.setHeaderColor(this.isDarkMode? '#1a1a1a' : '#ffffff');
-                webapp.setBackgroundColor(this.isDarkMode? '#1a1a1a' : '#ffffff');
-            },
-            watch: {
-                activeTab(val) {
-                    const titles = ['广场', '会话', '我的'];
-                    this.currentTitle = val === 0? 'DZMM | 大家都爱玩' : titles[val];
+                });
+            } catch (e) {
+                console.error('Error loading cards:', e);
+                webapp.showAlert('加载角色列表失败，请重试。');
+            }
+        }
+
+        // 从 Issue 解析卡片数据
+        function parseCardFromIssue(issue) {
+            const body = issue.body;
+            if (!body.includes('```json')) return null;
+            
+            const jsonStr = body.split('```json')[1].split('```')[0].trim();
+            const cardData = JSON.parse(jsonStr);
+            
+            // 提取图片 URL
+            let imageUrl = null;
+            const lines = body.split('\n');
+            for (const line of lines) {
+                if (line.includes('![') && line.includes('](') && line.includes(')')) {
+                    imageUrl = line.split('](')[1].split(')')[0];
+                    break;
                 }
             }
-        });
+            
+            return {
+                id: issue.number,
+                title: cardData.title,
+                description: cardData.description,
+                image_url: imageUrl || 'https://via.placeholder.com/300',
+                personality: cardData.personality,
+                cost: cardData.cost || 0,
+                rating: cardData.rating || 5.0,
+                heat: cardData.heat || 0,
+                interactions: cardData.interactions || {
+                    "抱抱": "温柔地依偎在你怀里",
+                    "亲亲": "轻轻地在你唇上留下一吻",
+                    "摸头": "幸福地眯起眼睛",
+                    "调情": "害羞地靠近你"
+                }
+            };
+        }
 
-        // 注册 Vant 组件
-        app.use(vant);
-        app.mount('#app');
+        // 创建卡片元素
+        function createCardElement(card) {
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.innerHTML = `
+                <img class="card-image" src="${card.image_url}" alt="${card.title}">
+                <div class="card-content">
+                    <h3 class="card-title">${card.title}</h3>
+                    <p class="card-subtitle">${card.personality}</p>
+                    <div class="card-stats">
+                        <span>⭐ ${card.rating}</span>
+                        <span>🔥 ${card.heat}</span>
+                        <span>💎 ${card.cost}</span>
+                    </div>
+                </div>
+            `;
+            
+            div.onclick = () => showCardDetail(card);
+            return div;
+        }
+
+        // 显示角色详情
+        function showCardDetail(card) {
+            selectedCard = card;
+            
+            document.getElementById('modalTitle').textContent = card.title;
+            document.getElementById('modalImage').src = card.image_url;
+            document.getElementById('modalDescription').textContent = card.description;
+            
+            const statsHtml = `
+                <p>🎭 性格：${card.personality}</p>
+                <p>⭐ 评分：${card.rating}</p>
+                <p>🔥 热度：${card.heat}</p>
+                <p>💎 花费：${card.cost} 积分</p>
+                <p>💫 互动：${Object.keys(card.interactions).join('、')}</p>
+            `;
+            document.getElementById('modalStats').innerHTML = statsHtml;
+            
+            const modal = document.getElementById('modal');
+            modal.style.display = 'flex';
+        }
+
+        // 点击空白处关闭弹窗
+        document.getElementById('modal').onclick = function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+            }
+        };
+
+        // 开始对话按钮点击事件
+        document.getElementById('startChat').onclick = function() {
+            if (!selectedCard) return;
+            
+            webapp.sendData(JSON.stringify({
+                action: 'select_role',
+                roleId: selectedCard.id
+            }));
+            
+            webapp.close();
+        };
+
+        // 加载角色列表
+        loadCards();
+
+        // 设置主题颜色
+        webapp.setHeaderColor(webapp.themeParams.bg_color);
+        webapp.expand();
     </script>
 </body>
-
 </html>
