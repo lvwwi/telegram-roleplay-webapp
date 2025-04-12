@@ -1,338 +1,219 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DZMM | 大家都爱玩</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/vant@4/lib/index.css"/>
-    <script src="https://fastly.jsdelivr.net/npm/vue@3"></script>
-    <script src="https://fastly.jsdelivr.net/npm/vant@4/lib/vant.min.js"></script>
-    <style>
-        [v-cloak] {
-            display: none;
-        }
-
-        :root {
-            --tg-theme-bg-color: #1a1a1a;
-            --tg-theme-text-color: #ffffff;
-            --tg-theme-hint-color: #999999;
-            --tg-theme-link-color: #ff69b4;
-            --tg-theme-button-color: #ff69b4;
-            --tg-theme-button-text-color: #ffffff;
-            --card-bg-color: #2a2a2a;
-        }
-
-        body {
-            background-color: var(--tg-theme-bg-color);
-            color: var(--tg-theme-text-color);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-        }
-
-        .app-container {
-            padding-bottom: 50px;
-        }
-
-        .nav-bar {
-            background-color: var(--card-bg-color) !important;
-        }
-
-        .card {
-            background: var(--card-bg-color);
-            border-radius: 12px;
-            margin: 12px;
-            overflow: hidden;
-        }
-
-        .card-cover {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
-
-        .card-content {
-            padding: 12px;
-        }
-
-        .card-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-
-        .card-desc {
-            font-size: 14px;
-            color: var(--tg-theme-hint-color);
-            margin-bottom: 8px;
-        }
-
-        .card-meta {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 12px;
-            color: var(--tg-theme-hint-color);
-        }
-
-        .rating {
-            color: #ff9800;
-        }
-
-        .heat {
-            color: #f44336;
-        }
-
-        .author {
-            color: var(--tg-theme-link-color);
-        }
-
-        .search-bar {
-            padding: 8px 12px;
-            background: var(--card-bg-color);
-        }
-
-        .tab-content {
-            min-height: calc(100vh - 96px);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <title>DZMM Page</title>
 </head>
+
 <body>
-    <div id="app" v-cloak>
-        <!-- 导航栏 -->
-        <van-nav-bar
-            :title="currentTitle"
-            fixed
-            :border="false"
-            class="nav-bar"
-        >
-            <template #right>
-                <van-icon name="search" size="24" @click="showSearch = true" />
-                <van-icon name="bell" size="24" style="margin-left: 16px" @click="showNotifications = true" />
-                <van-icon :name="isDarkMode ? 'moon-o' : 'sunny-o'" size="24" style="margin-left: 16px" @click="toggleDarkMode" />
-            </template>
-        </van-nav-bar>
-
-        <!-- 搜索弹窗 -->
-        <van-popup v-model:show="showSearch" position="top" :style="{ height: '100%' }">
-            <van-search
-                v-model="searchValue"
-                placeholder="搜索内容"
-                show-action
-                @cancel="showSearch = false"
-            />
-            <div class="search-results" v-if="searchValue">
-                <!-- 搜索结果 -->
-            </div>
-        </van-popup>
-
-        <!-- 通知弹窗 -->
-        <van-popup v-model:show="showNotifications" position="right" :style="{ height: '100%', width: '80%' }">
-            <van-nav-bar
-                title="通知"
-                left-arrow
-                @click-left="showNotifications = false"
-            />
-            <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
-                <van-list
-                    v-model:loading="loading"
-                    :finished="finished"
-                    finished-text="没有更多了"
-                    @load="onLoad"
-                >
-                    <van-cell v-for="item in notifications" :key="item.id" :title="item.title" :label="item.content" />
-                </van-list>
-            </van-pull-refresh>
-        </van-popup>
-
-        <!-- 主内容区 -->
-        <div class="app-container" :style="{ paddingTop: '46px' }">
-            <van-tabs v-model:active="activeTab" animated swipeable>
-                <!-- 广场 -->
-                <van-tab title="广场">
-                    <div class="tab-content">
-                        <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
-                            <van-list
-                                v-model:loading="loading"
-                                :finished="finished"
-                                finished-text="没有更多了"
-                                @load="onLoad"
-                            >
-                                <div class="card" v-for="item in items" :key="item.id" @click="openDetail(item)">
-                                    <img :src="item.cover" class="card-cover" />
-                                    <div class="card-content">
-                                        <div class="card-title">{{ item.title }}</div>
-                                        <div class="card-desc">{{ item.description }}</div>
-                                        <div class="card-meta">
-                                            <span class="rating">
-                                                <van-rate v-model="item.rating" readonly allow-half size="12" />
-                                                {{ item.rating }}
-                                            </span>
-                                            <span class="heat">
-                                                <van-icon name="fire" />
-                                                {{ item.heat }}
-                                            </span>
-                                            <span class="author">{{ item.author }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </van-list>
-                        </van-pull-refresh>
-                    </div>
-                </van-tab>
-
-                <!-- 会话 -->
-                <van-tab title="会话">
-                    <div class="tab-content">
-                        <van-contact-list
-                            v-model="selectedContact"
-                            :list="contacts"
-                            @add="onAdd"
-                            @edit="onEdit"
-                            @select="onSelect"
-                        />
-                    </div>
-                </van-tab>
-
-                <!-- 我的 -->
-                <van-tab title="我的">
-                    <div class="tab-content">
-                        <van-cell-group inset>
-                            <van-cell title="个人信息" is-link @click="openProfile" />
-                            <van-cell title="我的收藏" is-link @click="openFavorites" />
-                            <van-cell title="历史记录" is-link @click="openHistory" />
-                            <van-cell title="设置" is-link @click="openSettings" />
-                        </van-cell-group>
-                    </div>
-                </van-tab>
-            </van-tabs>
-        </div>
+  <!-- 顶部导航栏 -->
+  <div class="nav-bar">
+    <div class="app-title">DZMM | 大家都爱玩</div>
+    <div class="nav-icons">
+      <i class="icon-search"></i>
+      <i class="icon-bell"></i>
+      <i class="icon-moon"></i>
+      <img class="user-avatar" src="avatar.png">
     </div>
+  </div>
 
-    <script>
-        const { createApp } = Vue;
-        const webapp = window.Telegram.WebApp;
-        webapp.ready();
+  <!-- 内容卡片区域 -->
+  <div class="content-cards">
+    <!-- 示例卡片1 -->
+    <div class="content-card">
+      <img class="card-cover" src="cover1.png">
+      <div class="card-info">
+        <h2 class="card-title">独属于你的时刻：一起来...</h2>
+        <p class="card-desc">【综】恒定2200tk，开头1400tk 这是一个发生在青核学园——一个在海边，以樱花大道与古老图书馆闻名的高中，讲述了我们的user作为学园的顶尖学霸兼校草，受文艺部部长绫濑雪薇之邀加...</p>
+        <div class="card-rating">
+          <i class="icon-star"></i>
+          <i class="icon-star"></i>
+          <i class="icon-star"></i>
+          <i class="icon-star"></i>
+          <i class="icon-star"></i>
+          <span class="rating-score">5.0</span>
+          <div class="rating-heat">
+            <i class="icon-fire"></i>
+            <span class="heat-value">81</span>
+          </div>
+        </div>
+        <p class="card-author">鹅绒Velvet</p>
+      </div>
+    </div>
+    <!-- 示例卡片2 -->
+    <div class="content-card">
+      <img class="card-cover" src="cover2.png">
+      <div class="card-info">
+        <h2 class="card-title">白檀夕</h2>
+        <p class="card-desc">Cialto~(≧∇≦)ノ☆【定制卡】感谢白檀夕定制并公开 (user) 萧岚表面是雷厉风行的公司领导，实际上是缠绵论坛的资深用户，完成过大小小数十次氪出或调款任务，曾与至少10名网友...</p>
+        <div class="card-rating">
+          <i class="icon-star"></i>
+          <i class="icon-star"></i>
+          <i class="icon-star"></i>
+          <i class="icon-star"></i>
+          <i class="icon-star"></i>
+          <span class="rating-score">5.0</span>
+          <div class="rating-heat">
+            <i class="icon-fire"></i>
+            <span class="heat-value">63</span>
+          </div>
+        </div>
+        <p class="card-author">米奇喵喵屋</p>
+      </div>
+    </div>
+  </div>
 
-        const app = createApp({
-            data() {
-                return {
-                    activeTab: 0,
-                    currentTitle: 'DZMM | 大家都爱玩',
-                    isDarkMode: true,
-                    showSearch: false,
-                    showNotifications: false,
-                    searchValue: '',
-                    refreshing: false,
-                    loading: false,
-                    finished: false,
-                    selectedContact: '',
-                    items: [],
-                    contacts: [],
-                    notifications: [],
-                };
-            },
-            methods: {
-                toggleDarkMode() {
-                    this.isDarkMode = !this.isDarkMode;
-                    document.documentElement.style.setProperty(
-                        '--tg-theme-bg-color',
-                        this.isDarkMode ? '#1a1a1a' : '#ffffff'
-                    );
-                    document.documentElement.style.setProperty(
-                        '--tg-theme-text-color',
-                        this.isDarkMode ? '#ffffff' : '#000000'
-                    );
-                    document.documentElement.style.setProperty(
-                        '--card-bg-color',
-                        this.isDarkMode ? '#2a2a2a' : '#f5f5f5'
-                    );
-                },
-                async onRefresh() {
-                    await this.loadData(true);
-                    this.refreshing = false;
-                },
-                async onLoad() {
-                    await this.loadData();
-                    this.loading = false;
-                },
-                async loadData(refresh = false) {
-                    if (refresh) {
-                        this.items = [];
-                    }
-                    // 模拟加载数据
-                    const newItems = [
-                        {
-                            id: this.items.length + 1,
-                            title: '示例内容 ' + (this.items.length + 1),
-                            description: '这是一个示例描述，展示内容的概要信息。',
-                            cover: 'https://picsum.photos/400/300?random=' + (this.items.length + 1),
-                            rating: 4.5,
-                            heat: 1234,
-                            author: '作者名称'
-                        }
-                    ];
-                    this.items.push(...newItems);
-                    if (this.items.length >= 20) {
-                        this.finished = true;
-                    }
-                },
-                openDetail(item) {
-                    // 打开详情页
-                    webapp.sendData(JSON.stringify({
-                        action: 'open_detail',
-                        itemId: item.id
-                    }));
-                },
-                openProfile() {
-                    webapp.sendData(JSON.stringify({
-                        action: 'open_profile'
-                    }));
-                },
-                openFavorites() {
-                    webapp.sendData(JSON.stringify({
-                        action: 'open_favorites'
-                    }));
-                },
-                openHistory() {
-                    webapp.sendData(JSON.stringify({
-                        action: 'open_history'
-                    }));
-                },
-                openSettings() {
-                    webapp.sendData(JSON.stringify({
-                        action: 'open_settings'
-                    }));
-                },
-                onAdd() {
-                    // 添加联系人
-                },
-                onEdit() {
-                    // 编辑联系人
-                },
-                onSelect() {
-                    // 选择联系人
-                }
-            },
-            mounted() {
-                this.loadData();
-                // 设置 Telegram WebApp 主题
-                webapp.setHeaderColor(this.isDarkMode ? '#1a1a1a' : '#ffffff');
-                webapp.setBackgroundColor(this.isDarkMode ? '#1a1a1a' : '#ffffff');
-            },
-            watch: {
-                activeTab(val) {
-                    const titles = ['广场', '会话', '我的'];
-                    this.currentTitle = val === 0 ? 'DZMM | 大家都爱玩' : titles[val];
-                }
-            }
-        });
+  <!-- 底部导航栏 -->
+  <div class="bottom-nav">
+    <a href="#" class="nav-item">
+      <i class="icon-home"></i>
+      <span class="nav-text">广场</span>
+    </a>
+    <a href="#" class="nav-item">
+      <i class="icon-chat"></i>
+      <span class="nav-text">会话</span>
+    </a>
+    <a href="#" class="nav-item">
+      <i class="icon-user"></i>
+      <span class="nav-text">我的</span>
+    </a>
+  </div>
 
-        // 注册 Vant 组件
-        app.use(vant);
-        app.mount('#app');
-    </script>
+  <script src="script.js"></script>
 </body>
+
 </html>
+
+/* 全局样式 */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #1c1c1c;
+  color: white;
+  margin: 0;
+  padding: 0;
+}
+
+/* 顶部导航栏样式 */
+.nav-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #2c2c2c;
+  padding: 10px 20px;
+}
+.app-title {
+  font-size: 20px;
+}
+.nav-icons {
+  display: flex;
+  align-items: center;
+}
+.icon-search,
+.icon-bell,
+.icon-moon {
+  font-size: 20px;
+  margin-right: 10px;
+}
+.user-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+
+/* 内容卡片样式 */
+.content-cards {
+  padding: 20px;
+}
+.content-card {
+  background-color: #2c2c2c;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  display: flex;
+}
+.card-cover {
+  width: 100px;
+  height: 150px;
+  border-radius: 8px;
+  margin-right: 10px;
+}
+.card-info {
+  flex: 1;
+}
+.card-title {
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+.card-desc {
+  font-size: 12px;
+  color: #ccc;
+  margin-bottom: 5px;
+}
+.card-rating {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+.icon-star {
+  color: yellow;
+}
+.rating-score {
+  font-size: 14px;
+  margin-left: 5px;
+}
+.rating-heat {
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+}
+.icon-fire {
+  color: orange;
+}
+.heat-value {
+  font-size: 14px;
+  margin-left: 5px;
+}
+.card-author {
+  font-size: 12px;
+  color: #ccc;
+}
+
+/* 底部导航栏样式 */
+.bottom-nav {
+  display: flex;
+  justify-content: space-around;
+  background-color: #2c2c2c;
+  padding: 10px 0;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: white;
+}
+.icon-home,
+.icon-chat,
+.icon-user {
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+.nav-text {
+  font-size: 12px;
+}
+
+// 这里可以添加一些简单的交互逻辑，比如点击事件等
+// 示例：给底部导航栏的“广场”按钮添加点击事件
+const squareButton = document.querySelector('.bottom-nav a[href="#"][class*="nav-item"]:first-child');
+squareButton.addEventListener('click', function () {
+  alert('你点击了广场按钮');
+  // 这里可以添加实际的页面跳转或功能逻辑，比如使用Telegram的API进行页面导航
+});
+
+// 其他类似的交互逻辑可以按照这种方式添加到对应的元素上
