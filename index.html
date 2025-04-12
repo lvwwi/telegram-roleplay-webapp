@@ -37,6 +37,7 @@
             padding-bottom: 50px;
         }
 
+        /* 顶部导航栏样式调整 */
         .nav-bar {
             background-color: var(--tg-theme-bg-color) !important;
             border-bottom: 1px solid #e0e0e0;
@@ -44,6 +45,8 @@
             justify-content: space-between;
             align-items: center;
             padding: 0 16px;
+            position: relative;
+            z-index: 1;
         }
 
         .nav-bar .app-title {
@@ -61,6 +64,22 @@
             margin-left: 16px;
         }
 
+        /* 标题位置调整 */
+        .title-container {
+            text-align: center;
+            padding: 16px 0;
+            background-color: var(--tg-theme-bg-color);
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .title-container h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--tg-theme-text-color);
+        }
+
+        /* 标签导航栏样式 */
         .tag-nav {
             background-color: var(--tg-theme-bg-color);
             border-bottom: 1px solid #e0e0e0;
@@ -83,6 +102,102 @@
             margin-right: 8px;
             margin-bottom: 8px;
             font-size: 12px;
+        }
+
+        .active-tab {
+            color: var(--tg-theme-link-color);
+        }
+
+        /* 卡片样式调整 */
+        .card {
+            background: var(--card-bg-color);
+            border-radius: 12px;
+            margin: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+        }
+
+        /* 图片修改为矩形 */
+        .card-cover {
+            width: 120px;
+            height: 150px;
+            object-fit: cover;
+            margin-right: 12px;
+        }
+
+        .card-content {
+            padding: 12px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .card-desc {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color);
+            margin-bottom: 8px;
+        }
+
+        .card-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--tg-theme-hint-color);
+        }
+
+        .rating {
+            color: #ff9800;
+        }
+
+        .heat {
+            color: #f44336;
+        }
+
+        .author {
+            color: var(--tg-theme-link-color);
+        }
+
+        .search-bar {
+            padding: 8px 12px;
+            background: var(--card-bg-color);
+        }
+
+        .tab-content {
+            min-height: calc(100vh - 146px);
+        }
+
+        /* 底部导航栏样式调整 */
+        .bottom-nav {
+            background-color: var(--tg-theme-bg-color);
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .bottom-nav a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--tg-theme-text-color);
+        }
+
+        .bottom-nav a van-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .bottom-nav a span {
+            font-size: 14px;
         }
 
         .active-tab {
@@ -152,9 +267,13 @@
 
 <body>
     <div id="app" v-cloak>
+        <!-- 标题部分 -->
+        <div class="title-container">
+            <h1>DZMM | 大家都爱玩</h1>
+        </div>
         <!-- 导航栏 -->
         <div class="nav-bar">
-            <div class="app-title">DZMM | 大家都爱玩</div>
+            <div class="app-title">DZMM</div>
             <div class="nav-icons">
                 <van-icon name="search" size="24" @click="showSearch = true" />
                 <van-icon name="bell" size="24" style="margin-left: 16px" @click="showNotifications = true" />
@@ -285,6 +404,21 @@
                 </van-tab>
             </van-tabs>
         </div>
+    </div>
+    <!-- 底部导航栏 -->
+    <div class="bottom-nav">
+        <a href="#" class="nav-item">
+            <van-icon name="home" />
+            <span>广场</span>
+        </a>
+        <a href="#" class="nav-item">
+            <van-icon name="chatbubble" />
+            <span>会话</span>
+        </a>
+        <a href="#" class="nav-item">
+            <van-icon name="user" />
+            <span>我的</span>
+        </a>
     </div>
 
     <script>
