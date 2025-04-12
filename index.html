@@ -2,403 +2,337 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>酒馆AI - 角色扮演</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DZMM | 大家都爱玩</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/vant@4/lib/index.css"/>
+    <script src="https://fastly.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://fastly.jsdelivr.net/npm/vant@4/lib/vant.min.js"></script>
     <style>
+        [v-cloak] {
+            display: none;
+        }
+
         :root {
-            --tg-theme-bg-color: #fff;
-            --tg-theme-text-color: #000;
-            --tg-theme-hint-color: #999;
+            --tg-theme-bg-color: #1a1a1a;
+            --tg-theme-text-color: #ffffff;
+            --tg-theme-hint-color: #999999;
             --tg-theme-link-color: #ff69b4;
             --tg-theme-button-color: #ff69b4;
-            --tg-theme-button-text-color: #fff;
+            --tg-theme-button-text-color: #ffffff;
+            --card-bg-color: #2a2a2a;
         }
 
         body {
             background-color: var(--tg-theme-bg-color);
             color: var(--tg-theme-text-color);
-            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
         }
 
-        .container {
-            padding: 16px;
-            max-width: 600px;
-            margin: 0 auto;
-            width: 100%;
-            box-sizing: border-box;
-            flex: 1;
+        .app-container {
+            padding-bottom: 50px;
         }
 
-        .header {
-            text-align: center;
-            padding: 16px;
-            border-bottom: 1px solid var(--tg-theme-hint-color);
+        .nav-bar {
+            background-color: var(--card-bg-color) !important;
         }
 
-        .role-card {
-            background: var(--tg-theme-bg-color);
-            border: 1px solid var(--tg-theme-button-color);
+        .card {
+            background: var(--card-bg-color);
             border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
+            margin: 12px;
             overflow: hidden;
         }
 
-        .role-card:active {
-            transform: scale(0.98);
+        .card-cover {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
         }
 
-        .role-card.locked {
-            filter: grayscale(1);
-            opacity: 0.7;
+        .card-content {
+            padding: 12px;
         }
 
-        .role-card.locked::before {
-            content: '🔒';
-            position: absolute;
-            right: 10px;
-            top: 10px;
-            font-size: 20px;
-        }
-
-        .role-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .role-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 12px;
-            background: var(--tg-theme-button-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-        }
-
-        .role-title {
-            flex: 1;
-        }
-
-        .role-name {
+        .card-title {
             font-size: 18px;
             font-weight: bold;
-            color: var(--tg-theme-button-color);
+            margin-bottom: 8px;
         }
 
-        .role-subtitle {
-            font-size: 12px;
-            color: var(--tg-theme-hint-color);
-        }
-
-        .role-description {
+        .card-desc {
             font-size: 14px;
-            color: var(--tg-theme-text-color);
-            margin: 8px 0;
-        }
-
-        .role-info {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
+            color: var(--tg-theme-hint-color);
             margin-bottom: 8px;
         }
 
-        .info-item {
+        .card-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             font-size: 12px;
             color: var(--tg-theme-hint-color);
-            background: rgba(var(--tg-theme-button-color-rgb), 0.1);
-            padding: 4px 8px;
-            border-radius: 12px;
         }
 
-        .tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
+        .rating {
+            color: #ff9800;
         }
 
-        .tag {
-            background: var(--tg-theme-button-color);
-            color: var(--tg-theme-button-text-color);
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
+        .heat {
+            color: #f44336;
         }
 
-        .cost {
-            position: absolute;
-            right: 10px;
-            bottom: 10px;
-            background: var(--tg-theme-button-color);
-            color: #fff;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
+        .author {
+            color: var(--tg-theme-link-color);
         }
 
-        .chat-container {
-            display: none;
-            flex-direction: column;
-            height: 100%;
+        .search-bar {
+            padding: 8px 12px;
+            background: var(--card-bg-color);
         }
 
-        .messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-        }
-
-        .message {
-            max-width: 80%;
-            margin-bottom: 16px;
-            padding: 12px;
-            border-radius: 12px;
-            position: relative;
-        }
-
-        .message.user {
-            margin-left: auto;
-            background: var(--tg-theme-button-color);
-            color: #fff;
-        }
-
-        .message.bot {
-            margin-right: auto;
-            background: rgba(var(--tg-theme-button-color-rgb), 0.1);
-            color: var(--tg-theme-text-color);
-        }
-
-        .input-container {
-            padding: 16px;
-            border-top: 1px solid var(--tg-theme-hint-color);
-            display: none;
-        }
-
-        .input-row {
-            display: flex;
-            gap: 8px;
-        }
-
-        .message-input {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid var(--tg-theme-button-color);
-            border-radius: 24px;
-            background: var(--tg-theme-bg-color);
-            color: var(--tg-theme-text-color);
-            font-size: 16px;
-            outline: none;
-        }
-
-        .send-button {
-            padding: 12px 24px;
-            background: var(--tg-theme-button-color);
-            color: #fff;
-            border: none;
-            border-radius: 24px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .quick-actions {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 8px;
-            overflow-x: auto;
-            padding: 4px;
-        }
-
-        .action-button {
-            padding: 8px 16px;
-            background: rgba(var(--tg-theme-button-color-rgb), 0.1);
-            color: var(--tg-theme-button-color);
-            border: none;
-            border-radius: 16px;
-            cursor: pointer;
-            white-space: nowrap;
+        .tab-content {
+            min-height: calc(100vh - 96px);
         }
     </style>
 </head>
 <body>
-    <div class="container" id="app">
-        <div id="roles-container">
-            <div class="header">
-                <h1>💝 酒馆AI - 角色扮演</h1>
-                <p>选择你的理想对象开始甜蜜互动~</p>
+    <div id="app" v-cloak>
+        <!-- 导航栏 -->
+        <van-nav-bar
+            :title="currentTitle"
+            fixed
+            :border="false"
+            class="nav-bar"
+        >
+            <template #right>
+                <van-icon name="search" size="24" @click="showSearch = true" />
+                <van-icon name="bell" size="24" style="margin-left: 16px" @click="showNotifications = true" />
+                <van-icon :name="isDarkMode ? 'moon-o' : 'sunny-o'" size="24" style="margin-left: 16px" @click="toggleDarkMode" />
+            </template>
+        </van-nav-bar>
+
+        <!-- 搜索弹窗 -->
+        <van-popup v-model:show="showSearch" position="top" :style="{ height: '100%' }">
+            <van-search
+                v-model="searchValue"
+                placeholder="搜索内容"
+                show-action
+                @cancel="showSearch = false"
+            />
+            <div class="search-results" v-if="searchValue">
+                <!-- 搜索结果 -->
             </div>
-        </div>
-        <div id="chat-container" class="chat-container">
-            <div id="messages" class="messages"></div>
-            <div class="quick-actions" id="quickActions"></div>
-            <div class="input-container" id="inputContainer">
-                <div class="input-row">
-                    <input type="text" class="message-input" id="messageInput" placeholder="说点什么...">
-                    <button class="send-button" id="sendButton">发送</button>
-                </div>
-            </div>
+        </van-popup>
+
+        <!-- 通知弹窗 -->
+        <van-popup v-model:show="showNotifications" position="right" :style="{ height: '100%', width: '80%' }">
+            <van-nav-bar
+                title="通知"
+                left-arrow
+                @click-left="showNotifications = false"
+            />
+            <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
+                <van-list
+                    v-model:loading="loading"
+                    :finished="finished"
+                    finished-text="没有更多了"
+                    @load="onLoad"
+                >
+                    <van-cell v-for="item in notifications" :key="item.id" :title="item.title" :label="item.content" />
+                </van-list>
+            </van-pull-refresh>
+        </van-popup>
+
+        <!-- 主内容区 -->
+        <div class="app-container" :style="{ paddingTop: '46px' }">
+            <van-tabs v-model:active="activeTab" animated swipeable>
+                <!-- 广场 -->
+                <van-tab title="广场">
+                    <div class="tab-content">
+                        <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
+                            <van-list
+                                v-model:loading="loading"
+                                :finished="finished"
+                                finished-text="没有更多了"
+                                @load="onLoad"
+                            >
+                                <div class="card" v-for="item in items" :key="item.id" @click="openDetail(item)">
+                                    <img :src="item.cover" class="card-cover" />
+                                    <div class="card-content">
+                                        <div class="card-title">{{ item.title }}</div>
+                                        <div class="card-desc">{{ item.description }}</div>
+                                        <div class="card-meta">
+                                            <span class="rating">
+                                                <van-rate v-model="item.rating" readonly allow-half size="12" />
+                                                {{ item.rating }}
+                                            </span>
+                                            <span class="heat">
+                                                <van-icon name="fire" />
+                                                {{ item.heat }}
+                                            </span>
+                                            <span class="author">{{ item.author }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </van-list>
+                        </van-pull-refresh>
+                    </div>
+                </van-tab>
+
+                <!-- 会话 -->
+                <van-tab title="会话">
+                    <div class="tab-content">
+                        <van-contact-list
+                            v-model="selectedContact"
+                            :list="contacts"
+                            @add="onAdd"
+                            @edit="onEdit"
+                            @select="onSelect"
+                        />
+                    </div>
+                </van-tab>
+
+                <!-- 我的 -->
+                <van-tab title="我的">
+                    <div class="tab-content">
+                        <van-cell-group inset>
+                            <van-cell title="个人信息" is-link @click="openProfile" />
+                            <van-cell title="我的收藏" is-link @click="openFavorites" />
+                            <van-cell title="历史记录" is-link @click="openHistory" />
+                            <van-cell title="设置" is-link @click="openSettings" />
+                        </van-cell-group>
+                    </div>
+                </van-tab>
+            </van-tabs>
         </div>
     </div>
 
     <script>
+        const { createApp } = Vue;
         const webapp = window.Telegram.WebApp;
         webapp.ready();
 
-        let currentRole = null;
-        let userPoints = 0;
-
-        const roles = {
-            "seraphina": {
-                name: "塞拉芬娜",
-                title: "温柔甜心",
-                description: "甜美可人的女友，温柔体贴，充满爱意。",
-                personality: "温柔、体贴、甜美",
-                appearance: "身高165cm，长发飘飘，明眸善睐",
-                tags: ["甜美", "温柔", "初恋"],
-                cost: 0,
-                interactions: ["抱抱", "亲亲", "摸头", "调情"]
+        const app = createApp({
+            data() {
+                return {
+                    activeTab: 0,
+                    currentTitle: 'DZMM | 大家都爱玩',
+                    isDarkMode: true,
+                    showSearch: false,
+                    showNotifications: false,
+                    searchValue: '',
+                    refreshing: false,
+                    loading: false,
+                    finished: false,
+                    selectedContact: '',
+                    items: [],
+                    contacts: [],
+                    notifications: [],
+                };
             },
-            "yuki": {
-                name: "雪姬",
-                title: "高冷御姐",
-                description: "知性优雅的御姐，外表高冷内心火热。",
-                personality: "高冷、傲娇、性感",
-                appearance: "身高170cm，黑长直，气质优雅",
-                tags: ["御姐", "傲娇", "性感"],
-                cost: 100,
-                interactions: ["抱抱", "亲亲", "调情", "撒娇"]
-            }
-        };
-
-        function createRoleCard(id, role) {
-            const card = document.createElement('div');
-            card.className = `role-card ${role.cost > 0 ? 'locked' : ''}`;
-            
-            card.innerHTML = `
-                <div class="role-header">
-                    <div class="role-avatar">${role.name[0]}</div>
-                    <div class="role-title">
-                        <div class="role-name">${role.name}</div>
-                        <div class="role-subtitle">${role.title}</div>
-                    </div>
-                </div>
-                <div class="role-description">${role.description}</div>
-                <div class="role-info">
-                    <div class="info-item">💫 ${role.personality}</div>
-                    <div class="info-item">👗 ${role.appearance}</div>
-                </div>
-                <div class="tags">
-                    ${role.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                </div>
-                ${role.cost > 0 ? `<div class="cost">💫 ${role.cost}</div>` : ''}
-            `;
-
-            card.addEventListener('click', () => selectRole(id, role));
-            return card;
-        }
-
-        function selectRole(id, role) {
-            currentRole = { id, ...role };
-            
-            document.getElementById('roles-container').style.display = 'none';
-            document.getElementById('chat-container').style.display = 'flex';
-            document.getElementById('inputContainer').style.display = 'block';
-            
-            setupQuickActions(role.interactions);
-            
-            webapp.sendData(JSON.stringify({
-                action: 'select_role',
-                roleId: id,
-                roleName: role.name
-            }));
-        }
-
-        function setupQuickActions(interactions) {
-            const container = document.getElementById('quickActions');
-            container.innerHTML = '';
-            
-            interactions.forEach(action => {
-                const button = document.createElement('button');
-                button.className = 'action-button';
-                button.textContent = action;
-                button.onclick = () => sendMessage(action);
-                container.appendChild(button);
-            });
-        }
-
-        function addMessage(text, type) {
-            const message = document.createElement('div');
-            message.className = `message ${type}`;
-            message.textContent = text;
-            
-            const messages = document.getElementById('messages');
-            messages.appendChild(message);
-            messages.scrollTop = messages.scrollHeight;
-        }
-
-        function sendMessage(text) {
-            if (!text.trim()) return;
-            
-            addMessage(text, 'user');
-            webapp.sendData(JSON.stringify({
-                action: 'send_message',
-                roleId: currentRole.id,
-                message: text
-            }));
-
-            if (text !== document.getElementById('messageInput').value) {
-                document.getElementById('messageInput').value = '';
-            }
-        }
-
-        function initApp() {
-            const container = document.getElementById('roles-container');
-            Object.entries(roles).forEach(([id, role]) => {
-                container.appendChild(createRoleCard(id, role));
-            });
-
-            document.getElementById('sendButton').onclick = () => {
-                const input = document.getElementById('messageInput');
-                sendMessage(input.value);
-                input.value = '';
-            };
-
-            document.getElementById('messageInput').onkeypress = (e) => {
-                if (e.key === 'Enter') {
-                    sendMessage(e.target.value);
-                    e.target.value = '';
+            methods: {
+                toggleDarkMode() {
+                    this.isDarkMode = !this.isDarkMode;
+                    document.documentElement.style.setProperty(
+                        '--tg-theme-bg-color',
+                        this.isDarkMode ? '#1a1a1a' : '#ffffff'
+                    );
+                    document.documentElement.style.setProperty(
+                        '--tg-theme-text-color',
+                        this.isDarkMode ? '#ffffff' : '#000000'
+                    );
+                    document.documentElement.style.setProperty(
+                        '--card-bg-color',
+                        this.isDarkMode ? '#2a2a2a' : '#f5f5f5'
+                    );
+                },
+                async onRefresh() {
+                    await this.loadData(true);
+                    this.refreshing = false;
+                },
+                async onLoad() {
+                    await this.loadData();
+                    this.loading = false;
+                },
+                async loadData(refresh = false) {
+                    if (refresh) {
+                        this.items = [];
+                    }
+                    // 模拟加载数据
+                    const newItems = [
+                        {
+                            id: this.items.length + 1,
+                            title: '示例内容 ' + (this.items.length + 1),
+                            description: '这是一个示例描述，展示内容的概要信息。',
+                            cover: 'https://picsum.photos/400/300?random=' + (this.items.length + 1),
+                            rating: 4.5,
+                            heat: 1234,
+                            author: '作者名称'
+                        }
+                    ];
+                    this.items.push(...newItems);
+                    if (this.items.length >= 20) {
+                        this.finished = true;
+                    }
+                },
+                openDetail(item) {
+                    // 打开详情页
+                    webapp.sendData(JSON.stringify({
+                        action: 'open_detail',
+                        itemId: item.id
+                    }));
+                },
+                openProfile() {
+                    webapp.sendData(JSON.stringify({
+                        action: 'open_profile'
+                    }));
+                },
+                openFavorites() {
+                    webapp.sendData(JSON.stringify({
+                        action: 'open_favorites'
+                    }));
+                },
+                openHistory() {
+                    webapp.sendData(JSON.stringify({
+                        action: 'open_history'
+                    }));
+                },
+                openSettings() {
+                    webapp.sendData(JSON.stringify({
+                        action: 'open_settings'
+                    }));
+                },
+                onAdd() {
+                    // 添加联系人
+                },
+                onEdit() {
+                    // 编辑联系人
+                },
+                onSelect() {
+                    // 选择联系人
                 }
-            };
-
-            // 设置主题颜色
-            const root = document.documentElement;
-            root.style.setProperty('--tg-theme-bg-color', webapp.backgroundColor || '#fff');
-            root.style.setProperty('--tg-theme-text-color', webapp.textColor || '#000');
-            root.style.setProperty('--tg-theme-hint-color', webapp.hint_color || '#999');
-            root.style.setProperty('--tg-theme-button-color', '#ff69b4');
-            root.style.setProperty('--tg-theme-button-text-color', '#fff');
-            
-            // 提取 RGB 值用于透明度
-            const buttonColor = getComputedStyle(root).getPropertyValue('--tg-theme-button-color');
-            const rgb = buttonColor.match(/\d+/g);
-            if (rgb) {
-                root.style.setProperty('--tg-theme-button-color-rgb', rgb.join(','));
+            },
+            mounted() {
+                this.loadData();
+                // 设置 Telegram WebApp 主题
+                webapp.setHeaderColor(this.isDarkMode ? '#1a1a1a' : '#ffffff');
+                webapp.setBackgroundColor(this.isDarkMode ? '#1a1a1a' : '#ffffff');
+            },
+            watch: {
+                activeTab(val) {
+                    const titles = ['广场', '会话', '我的'];
+                    this.currentTitle = val === 0 ? 'DZMM | 大家都爱玩' : titles[val];
+                }
             }
-        }
+        });
 
-        initApp();
+        // 注册 Vant 组件
+        app.use(vant);
+        app.mount('#app');
     </script>
 </body>
 </html>
