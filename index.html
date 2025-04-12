@@ -674,13 +674,6 @@
                     this.userAvatar = webapp.initDataUnsafe.user.photo_url;
                 }
             },
-    
-            watch: {
-                activeTab(val) {
-                    const titles = ['广场', '会话', '我的'];
-                    this.currentTitle = val === 0 ? 'DZMM | 大家都爱玩' : titles[val];
-                }
-            }
         });
     
         // 注册 Vant 组件
