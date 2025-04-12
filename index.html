@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>角色扮演器</title>
+    <title>酒馆AI - 角色扮演</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --tg-theme-bg-color: #fff;
             --tg-theme-text-color: #000;
             --tg-theme-hint-color: #999;
-            --tg-theme-link-color: #2481cc;
-            --tg-theme-button-color: #2481cc;
+            --tg-theme-link-color: #ff69b4;
+            --tg-theme-button-color: #ff69b4;
             --tg-theme-button-text-color: #fff;
         }
 
@@ -19,14 +19,26 @@
             background-color: var(--tg-theme-bg-color);
             color: var(--tg-theme-text-color);
             font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu;
-            padding: 0;
             margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .container {
             padding: 16px;
             max-width: 600px;
             margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+            flex: 1;
+        }
+
+        .header {
+            text-align: center;
+            padding: 16px;
+            border-bottom: 1px solid var(--tg-theme-hint-color);
         }
 
         .role-card {
@@ -36,7 +48,7 @@
             padding: 16px;
             margin-bottom: 16px;
             cursor: pointer;
-            transition: transform 0.2s ease;
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
         }
@@ -45,33 +57,71 @@
             transform: scale(0.98);
         }
 
-        .role-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--tg-theme-button-color);
-            opacity: 0;
-            transition: opacity 0.2s ease;
+        .role-card.locked {
+            filter: grayscale(1);
+            opacity: 0.7;
         }
 
-        .role-card:hover::after {
-            opacity: 0.05;
+        .role-card.locked::before {
+            content: '🔒';
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            font-size: 20px;
+        }
+
+        .role-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .role-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+            background: var(--tg-theme-button-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+
+        .role-title {
+            flex: 1;
         }
 
         .role-name {
             font-size: 18px;
             font-weight: bold;
-            margin-bottom: 8px;
-            color: var(--tg-theme-link-color);
+            color: var(--tg-theme-button-color);
+        }
+
+        .role-subtitle {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color);
         }
 
         .role-description {
             font-size: 14px;
             color: var(--tg-theme-text-color);
-            margin-bottom: 12px;
+            margin: 8px 0;
+        }
+
+        .role-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .info-item {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color);
+            background: rgba(var(--tg-theme-button-color-rgb), 0.1);
+            padding: 4px 8px;
+            border-radius: 12px;
         }
 
         .tags {
@@ -88,69 +138,229 @@
             font-size: 12px;
         }
 
-        .selected {
-            border: 2px solid var(--tg-theme-button-color);
-            background: rgba(36, 129, 204, 0.1);
+        .cost {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            background: var(--tg-theme-button-color);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .chat-container {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .message {
+            max-width: 80%;
+            margin-bottom: 16px;
+            padding: 12px;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .message.user {
+            margin-left: auto;
+            background: var(--tg-theme-button-color);
+            color: #fff;
+        }
+
+        .message.bot {
+            margin-right: auto;
+            background: rgba(var(--tg-theme-button-color-rgb), 0.1);
+            color: var(--tg-theme-text-color);
+        }
+
+        .input-container {
+            padding: 16px;
+            border-top: 1px solid var(--tg-theme-hint-color);
+            display: none;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--tg-theme-button-color);
+            border-radius: 24px;
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            font-size: 16px;
+            outline: none;
+        }
+
+        .send-button {
+            padding: 12px 24px;
+            background: var(--tg-theme-button-color);
+            color: #fff;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            overflow-x: auto;
+            padding: 4px;
+        }
+
+        .action-button {
+            padding: 8px 16px;
+            background: rgba(var(--tg-theme-button-color-rgb), 0.1);
+            color: var(--tg-theme-button-color);
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            white-space: nowrap;
         }
     </style>
 </head>
 <body>
     <div class="container" id="app">
-        <div id="roles-container"></div>
+        <div id="roles-container">
+            <div class="header">
+                <h1>💝 酒馆AI - 角色扮演</h1>
+                <p>选择你的理想对象开始甜蜜互动~</p>
+            </div>
+        </div>
+        <div id="chat-container" class="chat-container">
+            <div id="messages" class="messages"></div>
+            <div class="quick-actions" id="quickActions"></div>
+            <div class="input-container" id="inputContainer">
+                <div class="input-row">
+                    <input type="text" class="message-input" id="messageInput" placeholder="说点什么...">
+                    <button class="send-button" id="sendButton">发送</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
         const webapp = window.Telegram.WebApp;
         webapp.ready();
 
+        let currentRole = null;
+        let userPoints = 0;
+
         const roles = {
-            "ancient": {
-                name: "远古贤者",
-                description: "拥有数千年智慧的远古贤者，知识渊博，说话充满智慧。",
-                personality: "智慧、沉稳、博学",
-                tags: ["智慧", "古老", "神秘"]
+            "seraphina": {
+                name: "塞拉芬娜",
+                title: "温柔甜心",
+                description: "甜美可人的女友，温柔体贴，充满爱意。",
+                personality: "温柔、体贴、甜美",
+                appearance: "身高165cm，长发飘飘，明眸善睐",
+                tags: ["甜美", "温柔", "初恋"],
+                cost: 0,
+                interactions: ["抱抱", "亲亲", "摸头", "调情"]
             },
-            "catgirl": {
-                name: "猫娘奈奈",
-                description: "可爱活泼的猫娘，说话时会加上「喵~」。",
-                personality: "可爱、活泼、粘人",
-                tags: ["可爱", "萌系", "元气"]
-            },
-            "butler": {
-                name: "执事塞巴斯",
-                description: "优雅专业的管家，处事得体，彬彬有礼。",
-                personality: "优雅、专业、可靠",
-                tags: ["绅士", "专业", "可靠"]
-            },
-            "witch": {
-                name: "魔女莉莉丝",
-                description: "神秘的魔女，精通各种魔法，性格傲娇。",
-                personality: "傲娇、神秘、强大",
-                tags: ["魔法", "傲娇", "神秘"]
+            "yuki": {
+                name: "雪姬",
+                title: "高冷御姐",
+                description: "知性优雅的御姐，外表高冷内心火热。",
+                personality: "高冷、傲娇、性感",
+                appearance: "身高170cm，黑长直，气质优雅",
+                tags: ["御姐", "傲娇", "性感"],
+                cost: 100,
+                interactions: ["抱抱", "亲亲", "调情", "撒娇"]
             }
         };
 
         function createRoleCard(id, role) {
             const card = document.createElement('div');
-            card.className = 'role-card';
+            card.className = `role-card ${role.cost > 0 ? 'locked' : ''}`;
+            
             card.innerHTML = `
-                <div class="role-name">${role.name}</div>
+                <div class="role-header">
+                    <div class="role-avatar">${role.name[0]}</div>
+                    <div class="role-title">
+                        <div class="role-name">${role.name}</div>
+                        <div class="role-subtitle">${role.title}</div>
+                    </div>
+                </div>
                 <div class="role-description">${role.description}</div>
+                <div class="role-info">
+                    <div class="info-item">💫 ${role.personality}</div>
+                    <div class="info-item">👗 ${role.appearance}</div>
+                </div>
                 <div class="tags">
                     ${role.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
                 </div>
+                ${role.cost > 0 ? `<div class="cost">💫 ${role.cost}</div>` : ''}
             `;
 
-            card.addEventListener('click', () => {
-                webapp.sendData(JSON.stringify({
-                    action: 'select_role',
-                    roleId: id,
-                    roleName: role.name
-                }));
-                webapp.close();
-            });
-
+            card.addEventListener('click', () => selectRole(id, role));
             return card;
+        }
+
+        function selectRole(id, role) {
+            currentRole = { id, ...role };
+            
+            document.getElementById('roles-container').style.display = 'none';
+            document.getElementById('chat-container').style.display = 'flex';
+            document.getElementById('inputContainer').style.display = 'block';
+            
+            setupQuickActions(role.interactions);
+            
+            webapp.sendData(JSON.stringify({
+                action: 'select_role',
+                roleId: id,
+                roleName: role.name
+            }));
+        }
+
+        function setupQuickActions(interactions) {
+            const container = document.getElementById('quickActions');
+            container.innerHTML = '';
+            
+            interactions.forEach(action => {
+                const button = document.createElement('button');
+                button.className = 'action-button';
+                button.textContent = action;
+                button.onclick = () => sendMessage(action);
+                container.appendChild(button);
+            });
+        }
+
+        function addMessage(text, type) {
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            
+            const messages = document.getElementById('messages');
+            messages.appendChild(message);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function sendMessage(text) {
+            if (!text.trim()) return;
+            
+            addMessage(text, 'user');
+            webapp.sendData(JSON.stringify({
+                action: 'send_message',
+                roleId: currentRole.id,
+                message: text
+            }));
+
+            if (text !== document.getElementById('messageInput').value) {
+                document.getElementById('messageInput').value = '';
+            }
         }
 
         function initApp() {
@@ -159,12 +369,33 @@
                 container.appendChild(createRoleCard(id, role));
             });
 
-            document.documentElement.style.setProperty('--tg-theme-bg-color', webapp.backgroundColor);
-            document.documentElement.style.setProperty('--tg-theme-text-color', webapp.textColor);
-            document.documentElement.style.setProperty('--tg-theme-hint-color', webapp.hint_color);
-            document.documentElement.style.setProperty('--tg-theme-link-color', webapp.link_color);
-            document.documentElement.style.setProperty('--tg-theme-button-color', webapp.button_color);
-            document.documentElement.style.setProperty('--tg-theme-button-text-color', webapp.button_text_color);
+            document.getElementById('sendButton').onclick = () => {
+                const input = document.getElementById('messageInput');
+                sendMessage(input.value);
+                input.value = '';
+            };
+
+            document.getElementById('messageInput').onkeypress = (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage(e.target.value);
+                    e.target.value = '';
+                }
+            };
+
+            // 设置主题颜色
+            const root = document.documentElement;
+            root.style.setProperty('--tg-theme-bg-color', webapp.backgroundColor || '#fff');
+            root.style.setProperty('--tg-theme-text-color', webapp.textColor || '#000');
+            root.style.setProperty('--tg-theme-hint-color', webapp.hint_color || '#999');
+            root.style.setProperty('--tg-theme-button-color', '#ff69b4');
+            root.style.setProperty('--tg-theme-button-text-color', '#fff');
+            
+            // 提取 RGB 值用于透明度
+            const buttonColor = getComputedStyle(root).getPropertyValue('--tg-theme-button-color');
+            const rgb = buttonColor.match(/\d+/g);
+            if (rgb) {
+                root.style.setProperty('--tg-theme-button-color-rgb', rgb.join(','));
+            }
         }
 
         initApp();

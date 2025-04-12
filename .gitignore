@@ -1,5 +1,23 @@
-# Git ignore file 
-__pycache__/ 
-*.pyc 
-.env 
-.vscode/ 
+# 敏感信息
+.env
+*.env
+.env.*
+
+# 日志
+logs/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
