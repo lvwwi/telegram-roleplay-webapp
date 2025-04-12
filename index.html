@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色扮演器</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --tg-theme-bg-color: #fff;
+            --tg-theme-text-color: #000;
+            --tg-theme-hint-color: #999;
+            --tg-theme-link-color: #2481cc;
+            --tg-theme-button-color: #2481cc;
+            --tg-theme-button-text-color: #fff;
+        }
+
+        body {
+            background-color: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu;
+            padding: 0;
+            margin: 0;
+        }
+
+        .container {
+            padding: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .role-card {
+            background: var(--tg-theme-bg-color);
+            border: 1px solid var(--tg-theme-button-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .role-card:active {
+            transform: scale(0.98);
+        }
+
+        .role-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--tg-theme-button-color);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .role-card:hover::after {
+            opacity: 0.05;
+        }
+
+        .role-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--tg-theme-link-color);
+        }
+
+        .role-description {
+            font-size: 14px;
+            color: var(--tg-theme-text-color);
+            margin-bottom: 12px;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .tag {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .selected {
+            border: 2px solid var(--tg-theme-button-color);
+            background: rgba(36, 129, 204, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+        <div id="roles-container"></div>
+    </div>
+
+    <script>
+        const webapp = window.Telegram.WebApp;
+        webapp.ready();
+
+        const roles = {
+            "ancient": {
+                name: "远古贤者",
+                description: "拥有数千年智慧的远古贤者，知识渊博，说话充满智慧。",
+                personality: "智慧、沉稳、博学",
+                tags: ["智慧", "古老", "神秘"]
+            },
+            "catgirl": {
+                name: "猫娘奈奈",
+                description: "可爱活泼的猫娘，说话时会加上「喵~」。",
+                personality: "可爱、活泼、粘人",
+                tags: ["可爱", "萌系", "元气"]
+            },
+            "butler": {
+                name: "执事塞巴斯",
+                description: "优雅专业的管家，处事得体，彬彬有礼。",
+                personality: "优雅、专业、可靠",
+                tags: ["绅士", "专业", "可靠"]
+            },
+            "witch": {
+                name: "魔女莉莉丝",
+                description: "神秘的魔女，精通各种魔法，性格傲娇。",
+                personality: "傲娇、神秘、强大",
+                tags: ["魔法", "傲娇", "神秘"]
+            }
+        };
+
+        function createRoleCard(id, role) {
+            const card = document.createElement('div');
+            card.className = 'role-card';
+            card.innerHTML = `
+                <div class="role-name">${role.name}</div>
+                <div class="role-description">${role.description}</div>
+                <div class="tags">
+                    ${role.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                </div>
+            `;
+
+            card.addEventListener('click', () => {
+                webapp.sendData(JSON.stringify({
+                    action: 'select_role',
+                    roleId: id,
+                    roleName: role.name
+                }));
+                webapp.close();
+            });
+
+            return card;
+        }
+
+        function initApp() {
+            const container = document.getElementById('roles-container');
+            Object.entries(roles).forEach(([id, role]) => {
+                container.appendChild(createRoleCard(id, role));
+            });
+
+            document.documentElement.style.setProperty('--tg-theme-bg-color', webapp.backgroundColor);
+            document.documentElement.style.setProperty('--tg-theme-text-color', webapp.textColor);
+            document.documentElement.style.setProperty('--tg-theme-hint-color', webapp.hint_color);
+            document.documentElement.style.setProperty('--tg-theme-link-color', webapp.link_color);
+            document.documentElement.style.setProperty('--tg-theme-button-color', webapp.button_color);
+            document.documentElement.style.setProperty('--tg-theme-button-text-color', webapp.button_text_color);
+        }
+
+        initApp();
+    </script>
+</body>
+</html>
