@@ -1,29 +1,26 @@
 <!DOCTYPE html>
 <html lang="zh">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DZMM | 大家都爱玩</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/vant@4/lib/index.css" />
+    <link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/vant@4/lib/index.css"/>
     <script src="https://fastly.jsdelivr.net/npm/vue@3"></script>
     <script src="https://fastly.jsdelivr.net/npm/vant@4/lib/vant.min.js"></script>
-    <!-- 样式部分保持不变 -->
     <style>
-        /* 所有原有样式保持不变 */
         [v-cloak] {
             display: none;
         }
 
         :root {
-            --tg-theme-bg-color: #ffffff;
-            --tg-theme-text-color: #000000;
-            --tg-theme-hint-color: #666666;
+            --tg-theme-bg-color: #1a1a1a;
+            --tg-theme-text-color: #ffffff;
+            --tg-theme-hint-color: #999999;
             --tg-theme-link-color: #ff69b4;
             --tg-theme-button-color: #ff69b4;
             --tg-theme-button-text-color: #ffffff;
-            --card-bg-color: #f5f5f5;
+            --card-bg-color: #2a2a2a;
         }
 
         body {
@@ -39,93 +36,21 @@
             padding-bottom: 50px;
         }
 
-        /* 顶部导航栏样式调整 */
         .nav-bar {
-            background-color: var(--tg-theme-bg-color) !important;
-            border-bottom: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 16px;
-            position: relative;
-            z-index: 1;
+            background-color: var(--card-bg-color) !important;
         }
 
-        .nav-bar .app-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: var(--tg-theme-text-color);
-        }
-
-        .nav-bar .nav-icons {
-            display: flex;
-            align-items: center;
-        }
-
-        .nav-bar .nav-icons van-icon {
-            margin-left: 16px;
-        }
-
-        /* 标题位置调整 */
-        .title-container {
-            text-align: center;
-            padding: 16px 0;
-            background-color: var(--tg-theme-bg-color);
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .title-container h1 {
-            margin: 0;
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--tg-theme-text-color);
-        }
-
-        /* 标签导航栏样式 */
-        .tag-nav {
-            background-color: var(--tg-theme-bg-color);
-            border-bottom: 1px solid #e0e0e0;
-            padding: 8px 16px;
-        }
-
-        .tag-nav ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-wrap: wrap;
-        }
-
-        .tag-nav ul li {
-            background-color: #f0f0f0;
-            color: var(--tg-theme-text-color);
-            border-radius: 4px;
-            padding: 4px 8px;
-            margin-right: 8px;
-            margin-bottom: 8px;
-            font-size: 12px;
-        }
-
-        .active-tab {
-            color: var(--tg-theme-link-color);
-        }
-
-        /* 卡片样式调整 */
         .card {
             background: var(--card-bg-color);
             border-radius: 12px;
             margin: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            display: flex;
         }
 
-        /* 图片修改为矩形 */
         .card-cover {
-            width: 120px;
-            height: 150px;
+            width: 100%;
+            height: 200px;
             object-fit: cover;
-            margin-right: 12px;
         }
 
         .card-content {
@@ -133,7 +58,7 @@
         }
 
         .card-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
             margin-bottom: 8px;
         }
@@ -170,40 +95,10 @@
         }
 
         .tab-content {
-            min-height: calc(100vh - 146px);
-        }
-
-        /* 底部导航栏样式调整 */
-        .bottom-nav {
-            background-color: var(--tg-theme-bg-color);
-            border-top: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
-
-        .bottom-nav a {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-decoration: none;
-            color: var(--tg-theme-text-color);
-        }
-
-        .bottom-nav a van-icon {
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-
-        .bottom-nav a span {
-            font-size: 14px;
+            min-height: calc(100vh - 96px);
         }
     </style>
 </head>
-
 <body>
     <div class="container">
         <div class="card-grid" id="cardGrid"></div>
